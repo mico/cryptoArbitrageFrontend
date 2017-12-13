@@ -193,13 +193,12 @@ class HistoryRow extends React.Component {
           <thead>
             <tr>
             <th class="sortable" onClick={() => this.updateSort('pair')}><span class="glyphicon glyphicon-triangle-bottom"></span>Currency</th>
-            <th class="mobile sortable d-price d-price2" onClick={() => this.updateSort('spread')}>Price Spread</th>
+            <th class="mobile sortable d-price d-price2" onClick={() => this.updateSort('spread')}>Last Price Spread</th>
+            <th class="mobile sortable d-price d-price2" onClick={() => this.updateSort('spread')}>Price Spread Min/Max</th>
             <th class="mobile d-price2">Last Low Price</th>
             <th class="mobile d-price">Low Exchange</th>
             <th class="mobile d-price2">Last High Price</th>
             <th class="mobile d-price">High Exchange</th>
-            <th class="mobile d-bid">Low Bid/Ask Spread</th>
-            <th class="mobile d-bid">High Bid/Ask Spread</th>
             <th class="mobile-d-all">Time found</th>
             <th class="mobile-d-all">Was alive</th>
             </tr>
@@ -207,14 +206,13 @@ class HistoryRow extends React.Component {
           {this.props.history.map((data) =>
             <tr class='data'>
               <td class="data-currency">{data.pair}</td>
-              <td class="spread-overview-spread-price mobile d-price d-price2">{data.arbitrage.spread_percent}%</td>
-              <td class="mobile d-price2">{data.arbitrage.lowestAskPrice}</td>
+              <td class="spread-overview-spread-price mobile d-price d-price2">{data.arbitrage.spread_percent.toFixed(2)}%</td>
+              <td class="spread-overview-spread-price mobile d-price d-price2">{(data.min_spread / (data.arbitrage.lowestAskPrice / 100)).toFixed(2)} - {(data.max_spread / (data.arbitrage.lowestAskPrice / 100)).toFixed(2)}%</td>
+              <td class="mobile d-price2">{data.arbitrage.lowestAskPrice.toFixed(8)}</td>
               <td class="data-exchange mobile d-price">{data.arbitrage.lowestAskExchange}</td>
-              <td class="mobile d-price2">{data.arbitrage.highestBidPrice}</td>
+              <td class="mobile d-price2">{data.arbitrage.highestBidPrice.toFixed(8)}</td>
               <td class="data-exchange mobile d-price">{data.arbitrage.highestBidExchange}</td>
-              <td class="spread-overview-ba mobile d-bid">{data.lowestBASpread}%</td>
-              <td class="spread-overview-ba mobile d-bid">{data.highestBASpread}%</td>
-              <td class="data-pair mobile-d-all"><Moment date={new Date(data.time_found*1000)}/></td>
+              <td class="data-pair mobile-d-all"><Moment date={new Date(data.time_found*1000)} format="h:mm:ss"/></td>
               <td class="data-pair mobile-d-all">{moment.duration(data.finished-data.time_found, "seconds").humanize()}</td>
             </tr>
           )}
@@ -260,13 +258,15 @@ class App extends Component {
   }
 
   parseHistory(data) {
-    this.state.history.push(data)
+    this.state.history.unshift(data)
     this.setState({history: this.state.history})
   }
 
   render() {
     this.response = this.state['lastTimestamp'];
     //this.state['lastTimestamp'].spreads.pairs
+    var history = this.state.history;
+    //history.reverse();
     return (
       <div className="App">
         <p className="App-intro">
@@ -280,7 +280,7 @@ class App extends Component {
             </div>
             : <p class="loading"> Waiting for spreads data... </p> }
           {this.state.history.length > 0 ?
-            <HistoryRow history={this.state.history}/> :
+            <HistoryRow history={history}/> :
             <p></p>
           }
         </p>

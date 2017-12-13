@@ -228,6 +228,15 @@ th,td {
 .data-price-min,.data-price-max,.spread-overview-spread-price {
   background: #ddffcb;
 }
+
+.good {
+  background: #ddffcb;
+}
+
+.bad {
+  background: #ffd4cb;
+}
+
 .table-last-price-spread {
   background: #678e52;
   color:#fff;
