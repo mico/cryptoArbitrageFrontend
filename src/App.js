@@ -134,7 +134,7 @@ class PairRow extends React.Component {
     super();
     this.state = {
       has_updates: true,
-      sortBy: 'spread',
+      sortBy: 'pair',
       sortAsc: true,
     };
   }
@@ -228,7 +228,7 @@ class App extends Component {
     super();
     this.state = {
       lastTimestamp: false,
-      endpoint: "http://localhost:8080/chat",
+      endpoint: "http://107.170.61.147:8081/chat",
       history: [],
       last_exchange_updates: []
     };
