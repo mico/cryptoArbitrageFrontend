@@ -6,7 +6,9 @@ import './css/fonts.css';
 import './css/responsive.css';
 import ReactTimeAgo from 'react-time-ago'
 import Moment from 'react-moment';
-import moment from 'moment'
+import moment from 'moment';
+import Stats from './component/Stats'
+import { Loader, Segment, Dimmer, Table, Header, Breadcrumb, Grid } from 'semantic-ui-react';
 
 class SpreadRow extends React.Component {
   constructor(props) {
@@ -116,10 +118,10 @@ class ExchangeStatusRow extends React.Component {
       <div>
         <table className="d-price">
           <thead>
-            <th className="mobile d-all" colSpan={Object.keys(this.props.lastExchangeUpdates).length}>Exchange last update received</th>
+            <th className="mobile d-all" colSpan={Object.keys(this.props.lastExchangeUpdates).length}>Exchange updated</th>
             <tr>
               {Object.entries(this.props.lastExchangeUpdates).map((exchange) =>
-                <td className="data-exchange mobile d-price">{exchange[0]}: <ReactTimeAgo locale="en-GB">{new Date(exchange[1]*1000)}</ReactTimeAgo></td>
+                <td className="data-exchange mobile d-price">{exchange[0]} <ReactTimeAgo locale="en-GB">{new Date(exchange[1]*1000)}</ReactTimeAgo></td>
               )}
             </tr>
           </thead>
@@ -150,6 +152,7 @@ class PairRow extends React.Component {
   render() {
     return (
       <div>
+        <Header as='h4' block>Spreads</Header>
         <table className="d-price">
           <thead>
             <tr>
@@ -185,39 +188,36 @@ class PairRow extends React.Component {
 class HistoryRow extends React.Component {
   render() {
     return (
-      <div>
-        <table className="d-price">
-          <thead>
-            <tr><td colSpan="13" className="table-updated-at mobile-d-all">History</td></tr>
-          </thead>
-          <thead>
-            <tr>
-            <th className="sortable" onClick={() => this.updateSort('pair')}><span className="glyphicon glyphicon-triangle-bottom"></span>Currency</th>
-            <th className="mobile sortable d-price d-price2" onClick={() => this.updateSort('spread')}>Last Price Spread</th>
-            <th className="mobile sortable d-price d-price2" onClick={() => this.updateSort('spread')}>Average Price Spread</th>
-            <th className="mobile d-price2">Last Low Price</th>
-            <th className="mobile d-price">Low Exchange</th>
-            <th className="mobile d-price2">Last High Price</th>
-            <th className="mobile d-price">High Exchange</th>
-            <th className="mobile-d-all">Time found</th>
-            <th className="mobile-d-all">Was alive</th>
-            </tr>
-          </thead>
-          {this.props.history.map((data) =>
-            <tr className='data'>
-              <td className="data-currency">{data.pair}</td>
-              <td className="spread-overview-spread-price mobile d-price d-price2">{data.arbitrage.spread_percent.toFixed(2)}%</td>
-              <td className="spread-overview-spread-price mobile d-price d-price2">{data.average_spread.toFixed(2)}%</td>
-              <td className="mobile d-price2">{data.arbitrage.lowestAskPrice.toFixed(8)}</td>
-              <td className="data-exchange mobile d-price">{data.arbitrage.lowestAskExchange}</td>
-              <td className="mobile d-price2">{data.arbitrage.highestBidPrice.toFixed(8)}</td>
-              <td className="data-exchange mobile d-price">{data.arbitrage.highestBidExchange}</td>
-              <td className="data-pair mobile-d-all"><Moment date={new Date(data.time_found*1000)} format="h:mm:ss"/></td>
-              <td className="data-pair mobile-d-all">{moment.duration(data.finished-data.time_found, "seconds").humanize()}</td>
-            </tr>
-          )}
-        </table>
-      </div>
+      <Table compact>
+        <Table.Header>
+          <Table.Row>
+            <Table.HeaderCell>Currency</Table.HeaderCell>
+            <Table.HeaderCell>Last Price Spread</Table.HeaderCell>
+            <Table.HeaderCell>Average Price Spread</Table.HeaderCell>
+            <Table.HeaderCell>Last Low Price</Table.HeaderCell>
+            <Table.HeaderCell>Low Exchange</Table.HeaderCell>
+            <Table.HeaderCell>Last High Price</Table.HeaderCell>
+            <Table.HeaderCell>High Exchange</Table.HeaderCell>
+            <Table.HeaderCell>Time found</Table.HeaderCell>
+            <Table.HeaderCell>Was alive</Table.HeaderCell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+        {this.props.history.map((data) =>
+          <Table.Row>
+            <Table.Cell>{data.pair}</Table.Cell>
+            <Table.Cell positive>{data.arbitrage.spread_percent.toFixed(2)}%</Table.Cell>
+            <Table.Cell positive>{data.average_spread.toFixed(2)}%</Table.Cell>
+            <Table.Cell>{data.arbitrage.lowestAskPrice.toFixed(8)}</Table.Cell>
+            <Table.Cell>{data.arbitrage.lowestAskExchange}</Table.Cell>
+            <Table.Cell>{data.arbitrage.highestBidPrice.toFixed(8)}</Table.Cell>
+            <Table.Cell>{data.arbitrage.highestBidExchange}</Table.Cell>
+            <Table.Cell><Moment date={new Date(data.time_found*1000)} format="h:mm:ss"/></Table.Cell>
+            <Table.Cell>{moment.duration(data.finished-data.time_found, "seconds").humanize()}</Table.Cell>
+          </Table.Row>
+        )}
+        </Table.Body>
+      </Table>
     );
   }
 }
@@ -234,7 +234,9 @@ class App extends Component {
       lastTimestamp: false,
       endpoint: endpoint,
       history: [],
-      last_exchange_updates: []
+      last_exchange_updates: [],
+      influx_pairs: [],
+      page: 'stats'
     };
     this.lastTimestamp = null;
     this.pair = null;
@@ -253,7 +255,8 @@ class App extends Component {
     // this.setState({ response: data })
     for (var timestamp in data['data'][0]) {
         this.setState({lastTimestamp: timestamp,
-                       spreads: data['data'][0][timestamp].spreads.pairs})
+                       spreads: data['data'][0][timestamp].spreads.pairs,
+                       influx_pairs: Object.entries(data['influx_pairs'])})
     }
   }
 
@@ -275,19 +278,44 @@ class App extends Component {
     return (
       <div className="App">
         <div className="App-intro">
-          {this.state.last_exchange_updates ?
+        { this.response ?
+        <Segment.Group>
+          <Segment basic>
+          <Grid>
+          <Grid.Column floated='left' width={5}>
+          <Breadcrumb>
+            <Breadcrumb.Section>Dashboard</Breadcrumb.Section>
+            <Breadcrumb.Divider />
+            <Breadcrumb.Section active={this.state.page === 'spreads'} onClick={() => this.setState({page: 'spreads'})}>Spreads</Breadcrumb.Section>
+            <Breadcrumb.Divider />
+            <Breadcrumb.Section active={this.state.page === 'history'} onClick={() => this.setState({page: 'history'})}>History</Breadcrumb.Section>
+            <Breadcrumb.Divider />
+            <Breadcrumb.Section active={this.state.page === 'stats'} onClick={() => this.setState({page: 'stats'})}>Statistics</Breadcrumb.Section>
+          </Breadcrumb>
+          </Grid.Column>
+          <Grid.Column floated='right' width={6}>
+          {Object.keys(this.state.last_exchange_updates).length > 0 ?
             <ExchangeStatusRow lastExchangeUpdates={this.state.last_exchange_updates}/> :
             <p></p>
           }
-          {this.response
-            ? <div>
-              <PairRow updated={new Date(this.response*1000).toString()} spreads={this.state.spreads}/>
-            </div>
-            : <p className="loading"> Waiting for spreads data... </p> }
-          {this.state.history.length > 0 ?
-            <HistoryRow history={history}/> :
+          </Grid.Column>
+          </Grid>
+          {this.state.page === 'spreads'
+            ? <PairRow updated={new Date(this.response*1000).toString()} spreads={this.state.spreads}/>
+            :  ""}
+          {this.state.history.length > 0 && this.state.page === 'history'?
+              <div>
+              <Header as='h4' block>History</Header>
+              <HistoryRow history={history}/>
+              </div> :
             <p></p>
           }
+          {this.state.page === 'stats'
+            ? <Stats pairs={this.state.influx_pairs}/> : ""
+          }
+          </Segment>
+        </Segment.Group>
+        : <Dimmer active><Loader>Waiting for spreads data...</Loader></Dimmer>}
         </div>
       </div>
     );

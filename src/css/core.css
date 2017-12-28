@@ -197,7 +197,7 @@ table {
 table {
   display: table;
   font-size: 12px;
-  text-transform: capitalize;
+  text-transform: none;
 }
 td:hover {
   cursor:pointer;
@@ -210,7 +210,7 @@ th {
   background: #dee2e8;
   font-size: 11px;
 }
-th,td {
+th, td {
   border:1px solid #ddd;
   padding:10px;
 }
@@ -338,4 +338,60 @@ th,td {
 }
 .content-page p {
   margin:0 0 20px;
+}
+
+.ui.table {
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.ui.compact.table {
+  margin-top: 0px;
+  padding-top: 0px;
+}
+
+ui.table {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.ui.compact.table td {
+  padding: 10px;
+}
+
+.ui.table thead th {
+  background: #dee2e8;
+  display: table-cell;
+  margin-top: 0;
+  border: 1px solid #ddd;
+  padding: 10px !important;
+}
+
+.ui.table td.positive {
+  color: black !important;
+  font-weight: bold;
+}
+
+.ui.table td.positive, .ui.table tr.positive {
+  background: #ddffcb !important;
+}
+
+.ui.table td.warning {
+  background: #ddf2ff !important;
+}
+
+.ui.block.header {
+  border-radius: 0;
+  border: 0;
+  background: #dee2e8;
+  font-weight: bold !important;
+}
+
+.ui.header {
+  font-family: "Futura", "Helvetica Neue", Arial, sans-serif;
+  margin-bottom: 0;
+}
+
+.ui.segments {
+  box-shadow: none !important;
 }
