@@ -256,7 +256,7 @@ class App extends Component {
     for (var timestamp in data['data'][0]) {
         this.setState({lastTimestamp: timestamp,
                        spreads: data['data'][0][timestamp].spreads.pairs,
-                       influx_pairs: Object.entries(data['influx_pairs'])})
+                       influx_pairs: data['influx_pairs']})
     }
   }
 
@@ -310,8 +310,8 @@ class App extends Component {
               </div> :
             <p></p>
           }
-          {this.state.page === 'stats'
-            ? <Stats pairs={this.state.influx_pairs}/> : ""
+          {this.state.page === 'stats' && this.state.influx_pairs['general']
+            ? <Stats pairs={this.state.influx_pairs}/> : "123"
           }
           </Segment>
         </Segment.Group>
