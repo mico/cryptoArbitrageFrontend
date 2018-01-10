@@ -311,7 +311,7 @@ class App extends Component {
             <p></p>
           }
           {this.state.page === 'stats' && this.state.influx_pairs['general']
-            ? <Stats pairs={this.state.influx_pairs}/> : "123"
+            ? <Stats pairs={this.state.influx_pairs}/> : ""
           }
           </Segment>
         </Segment.Group>
