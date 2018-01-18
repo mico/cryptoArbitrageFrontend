@@ -61,7 +61,7 @@ class SpreadRow extends React.Component {
         <td className="data-exchange mobile d-price">{this.props.spread.spreadLastPriceMaxExchange[1]}</td>
         <td className="spread-overview-ba mobile d-bid">{this.props.spread.spreadBidAskMin[0]}%</td>
         <td className="spread-overview-ba mobile d-bid">{this.props.spread.spreadBidAskMax[0]}%</td>
-        <td className="data-pair mobile-d-all"><ReactTimeAgo locale="en-GB">{new Date(this.props.spread.lastUpdated*1000)}</ReactTimeAgo></td>
+        <td className="data-pair mobile-d-all"><ReactTimeAgo locale="en-GB">{new Date(this.props.spread.lastUpdated[0]*1000)}</ReactTimeAgo> ({this.props.spread.lastUpdated[1]})</td>
         <td className="data-pair mobile-d-all"><ReactTimeAgo locale="en-GB">{new Date(this.props.spread.timeFound*1000)}</ReactTimeAgo></td>
       </tr>
     )
